@@ -42,7 +42,6 @@ connection.connect(function(err) {
     afterConnection();
 });
 
-
 // 5. Then create a Node application called `bamazonCustomer.js`. Running 
 // this application will first display all of the items available for sale. Include the ids, 
 // names, and prices of products for sale.
@@ -51,7 +50,7 @@ function afterConnection () {
         if (err) throw err;
         for (var i = 0; i < res.length; i++) {
             console.log(
-            "Item ID: " +
+            "\nItem ID: " +
               res[i].item_id +
               " || Product Name: " +
               res[i].product_name +
@@ -98,33 +97,34 @@ function runSearch() {
 function itemSearch() {
     // prompt for info about the item(s) being purchased
     inquirer
-      .prompt([
+        .prompt([
         {
-          name: "item_id",
-          type: "input",
-          message: "Excellent! What is the item id of the product you would like to purchase?",
-          validate: function(input){
+        name: "item_id",
+        type: "input",
+        message: "Excellent! What is the item id of the product you would like to purchase?",
+        validate: function(input){
             if(isNaN(input)){
-              console.log(" Please enter a number.")
+            console.log(" Please enter a number.")
             } else {
-              return true
+            return true
             }
-          }
+        }
         },
         {
-          name: "stock_quantity",
-          type: "input",
-          message: "How many of this product would you like to purchase?",
-          validate: function(input){
+        name: "stock_quantity",
+        type: "input",
+        message: "How many of this product would you like to purchase?",
+        validate: function(input){
             if(isNaN(input)){
-              console.log(" Please enter a number.")
+            console.log(" Please enter a number.")
             } else {
-              return true
+            return true
             }
-          }
+        }
         },
-      ])
-      .then(function(answer) {
+        ])
+        .then(function(answer) 
+        {
         let item_id = answer.item_id;
 		let stock_quantity = answer.stock_quantity;
 		console.log("You have asked to purchase " + stock_quantity + " of item ID " + item_id); 
@@ -136,7 +136,7 @@ function itemSearch() {
 
         // tthe function for selecting the products from the database in order to check for sufficient stock:
         selectProducts(item_id , stock_quantity);   
-      });
+        });
 };
 
 function selectProducts(item_id,stock_quantity) {
