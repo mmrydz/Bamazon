@@ -6,6 +6,9 @@
 // Make sure you save and require the MySQL and Inquirer npm packages in your homework files--
 // your app will need them for data input and storage.
 
+// also required: .gitignore, bamazon.sql to store database schema, and do the following
+// command line opereations: npm init -y, npm install, npm install mysql, npm install inquirer
+
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
