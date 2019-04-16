@@ -112,6 +112,12 @@ function goShopping() {
                 let qStock = res[0].stock_quantity;
                 let qWanted = answers.how_many;
 
+    // 7. Once the customer has placed the order, your application should check if your store has enough 
+    // of the product to meet the customer's request.
+    // 8. If your store _does_ have enough of the product, you should fulfill the customer's order.
+    // * This means updating the SQL database to reflect the remaining quantity.
+    // * Once the update goes through, show the customer the total cost of their purchase.
+             
                 if (qStock >= qWanted) {
                     var qLeft = qStock - qWanted;
                     var totalOwed = (res[0].price * qWanted).toFixed(2);
@@ -139,6 +145,8 @@ function goShopping() {
                         }
                     );
                 } else {
+    // * If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
+
                     console.log("\n============== Your Order is Not Confirmed ==============" +
                                 "\n\n            Insufficient inventory in stock" + 
                                "\n\n========================================================\n");
