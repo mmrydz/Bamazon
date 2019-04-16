@@ -39,15 +39,18 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if (err) throw err;
-    afterConnection();
+    console.log("\n\nWelcome to Bamazon, where we take your money AND your personal data!!\n\n");
+    displayProducts();
 });
 
 // 5. Then create a Node application called `bamazonCustomer.js`. Running 
 // this application will first display all of the items available for sale. Include the ids, 
 // names, and prices of products for sale.
-function afterConnection () {
+function displayProducts () {
+
     connection.query("SELECT * FROM products", function(err, res) {
         if (err) throw err;
+        console.log("\n\n===================== Products =====================");
         for (var i = 0; i < res.length; i++) {
             console.log(
             "\nItem ID: " +
@@ -58,50 +61,27 @@ function afterConnection () {
               res[i].department_name +
               " || Price: " +
               res[i].price +
-              " || Stock Quantity: " +
+              " || Quantity in Stock: " +
               res[i].stock_quantity
           );
         }
       });
-    runSearch()
+
+    goShopping()
 };
 
 // 6. The app should then prompt users with two messages.
 //    * The first should ask them the ID of the product they would like to buy.
 //    * The second message should ask how many units of the product they would like to buy.
 
-function runSearch() {
-    inquirer
-      .prompt({
-        name: "action",
-        type: "list",
-        message: "Would you like to make a purchase?",
-        choices: [
-          "Yes",
-          "No",
-        ]
-      })
-      .then(function(answer) {
-        switch (answer.action) {
-        case "Yes":
-            itemSearch();
-            break;
-  
-        case "NO":
-            connection.end();
-            break;
-        }
-      });
-  }
-
-function itemSearch() {
+function goShopping() {
     // prompt for info about the item(s) being purchased
     inquirer
         .prompt([
         {
-        name: "item_id",
+        name: "which_id",
         type: "input",
-        message: "Excellent! What is the item id of the product you would like to purchase?",
+        message: "What is the item id of the product you would like to purchase?",
         validate: function(input){
             if(isNaN(input)){
             console.log(" Please enter a number.")
@@ -111,7 +91,7 @@ function itemSearch() {
         }
         },
         {
-        name: "stock_quantity",
+        name: "how_many",
         type: "input",
         message: "How many of this product would you like to purchase?",
         validate: function(input){
@@ -123,47 +103,48 @@ function itemSearch() {
         }
         },
         ])
-        .then(function(answer) 
-        {
-        let item_id = answer.item_id;
-		let stock_quantity = answer.stock_quantity;
-		console.log("You have asked to purchase " + stock_quantity + " of item ID " + item_id); 
-        // 7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
-        //    * If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
-        // 8. However, if your store _does_ have enough of the product, you should fulfill the customer's order.
-        //    * This means updating the SQL database to reflect the remaining quantity.
-        //    * Once the update goes through, show the customer the total cost of their purchase.    
+        .then (function (answers) {
+            var query = "SELECT * FROM products WHERE ?";
+            connection.query(query, {
+                item_id: answers.which_id
+            }, function (err, res) {
 
-        // tthe function for selecting the products from the database in order to check for sufficient stock:
-        selectProducts(item_id , stock_quantity);   
+                let qStock = res[0].stock_quantity;
+                let qWanted = answers.how_many;
+
+                if (qStock >= qWanted) {
+                    var qLeft = qStock - qWanted;
+                    var totalOwed = (res[0].price * qWanted).toFixed(2);
+                    var itemBought = res[0].product_name;                    
+                    connection.query(
+                        "UPDATE products SET ? WHERE ?", [
+                            {
+                                stock_quantity: qLeft  
+                        },
+                            {
+                                item_id: answers.which_id
+                        }
+                    ],
+                        function (error) {
+                            if (error) throw err;
+                            console.log("\n\n============= Your Order is Confirmed =============" +
+                                        "\nItem:     " + itemBought +
+                                        "\nQuantity: " + qWanted + 
+                                        "\nPrice:    " +"$" + res[0].price +
+                                        "\nTotal:   $" + totalOwed +
+                                        "\n\n" +
+                                        "    Thank you for your business AND your personal data!" +
+                                        "\n\n====================================================\n\n");
+                            displayProducts();
+                        }
+                    );
+                } else {
+                    console.log("\n============== Your Order is Not Confirmed ==============" +
+                                "\n\n            Insufficient inventory in stock" + 
+                               "\n\n========================================================\n");
+                   displayProducts();
+                }
+            });
         });
 };
 
-function selectProducts(item_id,stock_quantity) {
-    connection.query("SELECT * FROM products WHERE item_id = item_id", function(err, res) {
-      if (err) throw err;
-  
-    // Checks to see if there is sufficient inventory
-        if(stock_quantity>res[0].stock_quantity) {
-            console.log("Insufficient inventory in stock!");
-            afterConnection();
-        } 
-        else {  
-            //displays how much the customer owes
-            let total = (parseInt(stock_quantity)*(res[0].price));
-            console.log("Thank you. You owe " + "$" + total);
-            //calculates the new inventory level and calls a function to update the database
-            let updatedQuantity = (res[0].stock_quantity) - (parseInt(stock_quantity));
-            updateQuantity(item_id, updatedQuantity);
-        }
-    });
-  };
-  
-// Updates inventory in the database if there is a sale
-function updateQuantity(item_id, updatedQuantity) {
-    var updating = connection.query("UPDATE products SET ? WHERE ?",[{stock_quantity:updatedQuantity},{item_id: item_id}],
-      function(err, res) {
-          if (err) throw err;
-      });
-    afterConnection();
-};
