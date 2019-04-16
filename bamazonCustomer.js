@@ -137,7 +137,7 @@ function goShopping() {
                                         "\nItem:     " + itemBought +
                                         "\nQuantity: " + qWanted + 
                                         "\nPrice:    " +"$" + res[0].price +
-                                        "\nTotal:   $" + totalOwed +
+                                        "\nTotal:     $" + totalOwed +
                                         "\n\n" +
                                         "    Thank you for your business AND your personal data!" +
                                         "\n\n====================================================\n\n");
